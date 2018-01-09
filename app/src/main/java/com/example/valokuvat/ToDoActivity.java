@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -100,7 +99,6 @@ public class ToDoActivity extends Activity {
                 MobileServiceActivityResult result = mClient.onActivityResult(data);
                 if (result.isLoggedIn()) {
                     // login succeeded
-                    Toast.makeText(this,"ds" , Toast.LENGTH_SHORT).show();
                     createAndShowDialog(String.format("You are now logged in - %1$2s", mClient.getCurrentUser().getUserId()), "Success");
                     createTable();
                     Intent intent = new Intent(this, MainActivity.class);

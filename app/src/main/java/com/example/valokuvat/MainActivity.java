@@ -1,20 +1,3 @@
-/**----------------------------------------------------------------------------------
- * Microsoft Developer & Platform Evangelism
- *
- * Copyright (c) Microsoft Corporation. All rights reserved.
- *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
- *----------------------------------------------------------------------------------
- * The example companies, organizations, products, domain names,
- * e-mail addresses, logos, people, places, and events depicted
- * herein are fictitious.  No association with any real company,
- * organization, product, domain name, email address, logo, person,
- * places, or events is intended or should be inferred.
- *----------------------------------------------------------------------------------
- **/
-
 package com.example.valokuvat;
 
 import android.content.Intent;
@@ -46,13 +29,11 @@ import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Client for Computer Vision API
     private VisionServiceClient client;
 
     // The image selected to detect.
     private Bitmap mBitmap;
-
-    //Tags Returned from Computer Vision API
-    private String tags;
 
     // The edit to show status and result.
     private EditText mEditText;
@@ -64,15 +45,19 @@ public class MainActivity extends AppCompatActivity {
     private int imageLength;
     private Button uploadImageButton;
     private static String user_id;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Connect client to Azure Computer Vision API
         if (client==null){
             client = new VisionServiceRestClient(getString(R.string.subscription_key), getString(R.string.subscription_apiroot));
         }
         Button selectImageButton = (Button) findViewById(R.id.Select);
         mEditText = (EditText)findViewById(R.id.editTextResult);
-        mEditText.append("ds");
+
+        //Select Image From Gallery
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
         user_id = getIntent().getStringExtra("user_id");
         Toast.makeText(this,user_id,Toast.LENGTH_LONG).show();
         this.uploadImageButton = (Button) findViewById(R.id.Upload);
+
+        //Upload Image to Storage Blob
         this.uploadImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
         });
         this.uploadImageButton.setEnabled(false);
         Button showImageButton = (Button) findViewById(R.id.Show);
+
+        //Show Images
         showImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,8 +98,10 @@ public class MainActivity extends AppCompatActivity {
         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
+        //Get Results From Computer Vision API
         AnalysisResult v = this.client.describe(inputStream, 1);
 
+        //Return String of tags
         String result = gson.toJson(v);
         Log.d("result", result);
         return result;
@@ -140,9 +131,11 @@ public class MainActivity extends AppCompatActivity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_IMAGE);
     }
+
     public static String getUser_id(){
         return user_id;
     }
+
     private void UploadImage()
     {
         try {
@@ -161,15 +154,15 @@ public class MainActivity extends AppCompatActivity {
                         handler.post(new Runnable() {
 
                             public void run() {
+
                                 // If image is selected successfully, set the image URI and bitmap.
                                 mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(imageUri, getContentResolver());
                                 if (mBitmap != null) {
-                                    mEditText.append("dd");
                                     doDescribe();
                                     Log.d("DescribeActivity", "Image: " + imageUri + " resized to " + mBitmap.getWidth()
                                             + "x" + mBitmap.getHeight());
                                 }
-                              Toast.makeText(MainActivity.this, "Image Uploaded Successfully. Name = " + imageName, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Image Uploaded Successfully. Name = " + imageName, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -177,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                         final String exceptionMessage = ex.getMessage();
                         handler.post(new Runnable() {
                             public void run() {
-                               // Toast.makeText(MainActivity.this, exceptionMessage, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, exceptionMessage, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -185,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
             th.start();
         }
         catch(Exception ex) {
-
             Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
