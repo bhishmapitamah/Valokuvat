@@ -43,5 +43,13 @@
             android:layout_height="wrap_content"
             app:srcCompat="@android:drawable/ic_menu_gallery"
             android:id="@+id/imageView" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/editTextResult"
+            android:layout_weight="1" />
     </LinearLayout>
 </RelativeLayout>

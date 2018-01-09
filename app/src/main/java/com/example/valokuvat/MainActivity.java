@@ -18,18 +18,44 @@
 package com.example.valokuvat;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.microsoft.projectoxford.vision.VisionServiceClient;
+import com.microsoft.projectoxford.vision.VisionServiceRestClient;
+import com.microsoft.projectoxford.vision.contract.AnalysisResult;
+import com.microsoft.projectoxford.vision.contract.Caption;
+import com.microsoft.projectoxford.vision.rest.VisionServiceException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
+
 public class MainActivity extends AppCompatActivity {
+
+    private VisionServiceClient client;
+
+    // The image selected to detect.
+    private Bitmap mBitmap;
+
+    //Tags Returned from Computer Vision API
+    private String tags;
+
+    // The edit to show status and result.
+    private EditText mEditText;
 
     private static final int SELECT_IMAGE = 100;
 
@@ -41,7 +67,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (client==null){
+            client = new VisionServiceRestClient(getString(R.string.subscription_key), getString(R.string.subscription_apiroot));
+        }
         Button selectImageButton = (Button) findViewById(R.id.Select);
+        mEditText = (EditText)findViewById(R.id.editTextResult);
+        mEditText.append("ds");
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -59,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         this.uploadImageButton.setEnabled(false);
-
         Button showImageButton = (Button) findViewById(R.id.Show);
         showImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,6 +99,33 @@ public class MainActivity extends AppCompatActivity {
         });
 
         this.imageView = (ImageView) findViewById(R.id.imageView);
+    }
+
+    private String process() throws VisionServiceException, IOException {
+        Gson gson = new Gson();
+
+        // Put the image into an input stream for detection.
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
+
+        AnalysisResult v = this.client.describe(inputStream, 1);
+
+        String result = gson.toJson(v);
+        Log.d("result", result);
+        return result;
+    }
+
+    public void doDescribe() {
+
+        mEditText.append("Describing......");
+        try {
+            new doRequest().execute();
+
+        } catch (Exception e)
+        {
+            mEditText.setText("Error encountered. Exception is: " + e.toString());
+        }
     }
 
     private void ListImages() {
@@ -104,7 +161,15 @@ public class MainActivity extends AppCompatActivity {
                         handler.post(new Runnable() {
 
                             public void run() {
-                                Toast.makeText(MainActivity.this, "Image Uploaded Successfully. Name = " + imageName, Toast.LENGTH_SHORT).show();
+                                // If image is selected successfully, set the image URI and bitmap.
+                                mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(imageUri, getContentResolver());
+                                if (mBitmap != null) {
+                                    mEditText.append("dd");
+                                    doDescribe();
+                                    Log.d("DescribeActivity", "Image: " + imageUri + " resized to " + mBitmap.getWidth()
+                                            + "x" + mBitmap.getHeight());
+                                }
+                              Toast.makeText(MainActivity.this, "Image Uploaded Successfully. Name = " + imageName, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -112,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                         final String exceptionMessage = ex.getMessage();
                         handler.post(new Runnable() {
                             public void run() {
-                                Toast.makeText(MainActivity.this, exceptionMessage, Toast.LENGTH_SHORT).show();
+                               // Toast.makeText(MainActivity.this, exceptionMessage, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -136,6 +201,59 @@ public class MainActivity extends AppCompatActivity {
                     this.imageView.setImageURI(this.imageUri);
                     this.uploadImageButton.setEnabled(true);
                 }
+        }
+    }
+    private class doRequest extends AsyncTask<String, String, String> {
+        // Store error message
+        private Exception e = null;
+
+        public doRequest() {
+        }
+
+        @Override
+        protected String doInBackground(String... args) {
+            try {
+                return process();
+            } catch (Exception e) {
+                this.e = e;    // Store error
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            super.onPostExecute(data);
+            // Display based on error existence
+
+            mEditText.setText("");
+            if (e != null) {
+                mEditText.setText("Error: " + e.getMessage());
+                this.e = null;
+            } else {
+                Gson gson = new Gson();
+                AnalysisResult result = gson.fromJson(data, AnalysisResult.class);
+
+                mEditText.append("Image format: " + result.metadata.format + "\n");
+                mEditText.append("Image width: " + result.metadata.width + ", height:" + result.metadata.height + "\n");
+                mEditText.append("\n");
+
+                for (Caption caption: result.description.captions) {
+                    mEditText.append("Caption: " + caption.text + ", confidence: " + caption.confidence + "\n");
+                }
+                mEditText.append("\n");
+
+                for (String tag: result.description.tags) {
+                    mEditText.append("Tag: " + tag + "\n");
+                }
+                mEditText.append("\n");
+
+                mEditText.append("\n--- Raw Data ---\n\n");
+                mEditText.append(data);
+                mEditText.setSelection(0);
+            }
+
+
         }
     }
 }

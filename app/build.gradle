@@ -52,5 +52,12 @@ dependencies {
     })
     //compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    //
+    // Use the following line to include client library for Vision API from Maven Central Repository
+    //
+
+    compile 'com.microsoft.projectoxford:vision:1.0.394'
+    compile 'com.android.support:appcompat-v7:25.0.0'
 }
 

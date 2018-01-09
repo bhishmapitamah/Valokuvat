@@ -25,4 +25,6 @@
     <string name="title_activity_list_images">ListImagesActivity</string>
     <string name="title_activity_image">ImageActivity</string>
 
+    <string name="subscription_key">14b76b06db344b469b9d601be105e7d0</string>
+    <string name="subscription_apiroot">https://westeurope.api.cognitive.microsoft.com/vision/v1.0</string>
 </resources>
