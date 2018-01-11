@@ -190,12 +190,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Add a new item
      *
-     * @param user_id
-     *            The id of the user
-     * @param imgkey
-     *              The key of the image
-     * @param tags
-     *              The tags related to the image
+     * @param list
+     *            The list of tags added to image
+     *
      */
     public void addItem(final List<String> list) {
         if (mClient == null) {
@@ -212,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                         // Create a new item
                         final ToDoItem item = new ToDoItem();
 
-                        item.setImgKey(imageUri.toString());
+                        item.setImgKey(image_name);
                         item.setTags(tag);
                         item.setUserId(user_id);
                         final ToDoItem entity = addItemInTable(item);
@@ -252,12 +249,14 @@ public class MainActivity extends AppCompatActivity {
         // Get the items that weren't marked as completed and add them in the
         // adapter
 
+        final String find= "girl";
+
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
             @Override
             protected Void doInBackground(Void... params) {
 
                 try {
-                    final List<ToDoItem> results = refreshItemsFromMobileServiceTable();
+                    final List<ToDoItem> results = refreshItemsFromMobileServiceTable(find);
 
                     //Offline Sync
                     //final List<ToDoItem> results = refreshItemsFromMobileServiceTableSyncTable();
@@ -267,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
 
                             for (ToDoItem item : results) {
-                                mEditText.append(item.getImgKey());
+                                mEditText.append(item.getImgKey()+'\n');
                             }
                         }
                     });
@@ -286,9 +285,8 @@ public class MainActivity extends AppCompatActivity {
      * Refresh the list with the items in the Mobile Service Table
      */
 
-    private List<ToDoItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
-        return mToDoTable.where().field("complete").
-                eq(val(false)).execute().get();
+    private List<ToDoItem> refreshItemsFromMobileServiceTable(String find) throws ExecutionException, InterruptedException {
+        return mToDoTable.where().field("tags").eq(val(find)).execute().get();
     }
 
     //Offline Sync
@@ -521,7 +519,7 @@ public class MainActivity extends AppCompatActivity {
     public static String getUser_id(){
         return user_id;
     }
-
+    public String image_name;
     private void UploadImage()
     {
         try {
@@ -536,7 +534,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
 
                         final String imageName = ImageManager.UploadImage(imageStream, imageLength);
-
+                        image_name = imageName;
                         handler.post(new Runnable() {
 
                             public void run() {
