@@ -37,7 +37,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/Show" />
-
+        <ProgressBar
+            android:id="@+id/loadingProgressBar"
+            android:layout_width="28dp"
+            android:layout_height="28dp" />
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

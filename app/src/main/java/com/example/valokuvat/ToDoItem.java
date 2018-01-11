@@ -5,12 +5,21 @@ package com.example.valokuvat;
  */
 public class ToDoItem {
 
-    private String user_id;
     /**
-     * Item text
+     * Tags related to a image
      */
-    @com.google.gson.annotations.SerializedName("text")
-    private String mText;
+    @com.google.gson.annotations.SerializedName("tags")
+    private String mTags;
+    /**
+     * Unique key of the image
+     */
+    @com.google.gson.annotations.SerializedName("imgkey")
+    private String mImgKey;
+    /**
+     * Login id of user
+     */
+    @com.google.gson.annotations.SerializedName("user_id")
+    private String mUserId;
 
     /**
      * Item Id
@@ -19,52 +28,31 @@ public class ToDoItem {
     private String mId;
 
     /**
-     * Indicates if the item is completed
-     */
-    @com.google.gson.annotations.SerializedName("complete")
-    private boolean mComplete;
-
-    /**
      * ToDoItem constructor
      */
     public ToDoItem() {
 
     }
 
-    @Override
-    public String toString() {
-        return getText();
-    }
-
     /**
      * Initializes a new ToDoItem
      *
-     * @param text
+     * @param user_id
      *            The item text
      * @param id
      *            The item id
+     * @param imgkey
+     *            The key of image
+     * @param tags
+     *            The tags related to image
      */
-    public ToDoItem(String text, String id) {
-        this.setText(text);
+    public ToDoItem(String id, String user_id, String imgkey, String tags) {
         this.setId(id);
+        this.setUserId(user_id);
+        this.setImgKey(imgkey);
+        this.setTags(tags);
     }
 
-    /**
-     * Returns the item text
-     */
-    public String getText() {
-        return mText;
-    }
-
-    /**
-     * Sets the item text
-     *
-     * @param text
-     *            text to set
-     */
-    public final void setText(String text) {
-        mText = text;
-    }
 
     /**
      * Returns the item id
@@ -84,18 +72,43 @@ public class ToDoItem {
     }
 
     /**
-     * Indicates if the item is marked as completed
+     * Returns the item user_id
      */
-    public boolean isComplete() {
-        return mComplete;
-    }
+    public String getUserId() { return mUserId;}
 
     /**
-     * Marks the item as completed or incompleted
+     * Sets the item user_id
+     *
+     * @param user_id
+     *              user_id to set
      */
-    public void setComplete(boolean complete) {
-        mComplete = complete;
-    }
+    public final void setUserId(String user_id) { mUserId = user_id;}
+
+    /**
+     * Returns the item imgkey
+     */
+    public String getImgKey() { return mImgKey;}
+
+    /**
+     * Sets the item user_id
+     *
+     * @param imgkey
+     *              imgkey to set
+     */
+    public final void setImgKey(String imgkey) { mImgKey = imgkey;}
+
+    /**
+     * Returns the item tags
+     */
+    public String getTags() { return mTags;}
+
+    /**
+     * Sets the item tags
+     *
+     * @param tags
+     *              tags to set
+     */
+    public final void setTags(String tags) { mTags = tags;}
 
     @Override
     public boolean equals(Object o) {

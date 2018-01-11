@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Created by Ashutosh _|_ on 09-01-2018.
+ * Created by Ashutosh on 09-01-2018.
  */
 
 public class ImageHelper {
