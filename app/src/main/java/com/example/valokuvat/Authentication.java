@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.microsoft.windowsazure.mobileservices.MobileServiceActivityResult;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
@@ -31,6 +30,7 @@ public class Authentication extends AppCompatActivity {
     private void authenticate() {
         // Login using the Google provider.
         mClient.login(MobileServiceAuthenticationProvider.WindowsAzureActiveDirectory, "valokuvat", WindowsAzureActiveDirectory_LOGIN_REQUEST_CODE);
+
     }
 
     @Override
@@ -42,7 +42,7 @@ public class Authentication extends AppCompatActivity {
                 MobileServiceActivityResult result = mClient.onActivityResult(data);
                 if (result.isLoggedIn()) {
                     // login succeeded
-                    Toast.makeText(this,"ds" , Toast.LENGTH_SHORT).show();
+                  //  Toast.makeText(this,"ds" , Toast.LENGTH_SHORT).show();
                     createAndShowDialog(String.format("You are now logged in - %1$2s", mClient.getCurrentUser().getUserId()), "Success");
                     Intent intent = new Intent(this, MainActivity.class);
                     intent.putExtra("user_id", mClient.getCurrentUser().getUserId());

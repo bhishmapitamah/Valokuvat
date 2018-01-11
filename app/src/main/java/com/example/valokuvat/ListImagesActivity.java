@@ -38,16 +38,21 @@ public class ListImagesActivity extends ListActivity {
 
         Thread th = new Thread(new Runnable() {
             public void run() {
-
+                Intent intent = getIntent();
+                boolean flag= false;
+                flag = intent.getExtras().getBoolean("flag");
                 try {
                     //Toast.makeText(ListImagesActivity.this,"dddd",Toast.LENGTH_LONG).show();
-                    final String[] images = ImageManager.ListImages();
-
-
+                    if(flag==false) {
+                        images = ImageManager.ListImages();
+                    }
+                    else {
+                        images = intent.getExtras().getStringArray("images");
+                    }
                     handler.post(new Runnable() {
 
                         public void run() {
-                            ListImagesActivity.this.images = images;
+                            //ListImagesActivity.this.images = images;
 
                             ArrayAdapter<String> adapter = new ArrayAdapter<String>(ListImagesActivity.this, R.layout.activity_list_images, images);
                             setListAdapter(adapter);
@@ -75,5 +80,6 @@ public class ListImagesActivity extends ListActivity {
 
         startActivity(intent);
     }
+
 
 }

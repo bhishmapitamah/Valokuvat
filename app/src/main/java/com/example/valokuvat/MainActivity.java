@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -78,7 +79,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private ProgressBar mProgressBar;
 
-
+    private String search;
+    public List taggedimages;
     //Manager for SQL Database
     private ToDoActivity database;
 
@@ -143,14 +145,25 @@ public class MainActivity extends AppCompatActivity {
             //Init local storage
             initLocalStore().get();
 
-            // Load the items from the Mobile Service
-            refreshItemsFromTable();
-
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
         } catch (Exception e){
             createAndShowDialog(e, "Error");
         }
+
+        //Search image tags
+        Button clickButton = (Button) findViewById(R.id.Seach_Button);
+        final EditText datatype = (EditText) findViewById(R.id.search_text);
+        clickButton.setOnClickListener( new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                search = datatype.getText().toString();
+                refreshItemsFromTable();
+
+            }
+        });
+
         Button selectImageButton = (Button) findViewById(R.id.Select);
         mEditText = (EditText)findViewById(R.id.editTextResult);
 
@@ -163,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         user_id = getIntent().getStringExtra("user_id");
-        Toast.makeText(this,user_id,Toast.LENGTH_LONG).show();
+        Toast.makeText(this,"You are logged in",Toast.LENGTH_LONG).show();
         this.uploadImageButton = (Button) findViewById(R.id.Upload);
 
         //Upload Image to Storage Blob
@@ -180,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         showImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ListImages();
+                ListImages(false);
             }
         });
 
@@ -194,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
      *            The list of tags added to image
      *
      */
+
     public void addItem(final List<String> list) {
         if (mClient == null) {
             return;
@@ -249,25 +263,25 @@ public class MainActivity extends AppCompatActivity {
         // Get the items that weren't marked as completed and add them in the
         // adapter
 
-        final String find= "girl";
-
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
             @Override
             protected Void doInBackground(Void... params) {
 
                 try {
-                    final List<ToDoItem> results = refreshItemsFromMobileServiceTable(find);
+                    final List<ToDoItem> results = refreshItemsFromMobileServiceTable();
 
                     //Offline Sync
                     //final List<ToDoItem> results = refreshItemsFromMobileServiceTableSyncTable();
-
+                    taggedimages =new LinkedList();
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
+                            mEditText.setText("");
                             for (ToDoItem item : results) {
                                 mEditText.append(item.getImgKey()+'\n');
+                                taggedimages.add(user_id+"/"+item.getImgKey());
                             }
+                            ListImages(true);
                         }
                     });
                 } catch (final Exception e){
@@ -279,14 +293,15 @@ public class MainActivity extends AppCompatActivity {
         };
 
         runAsyncTask(task);
+
     }
 
     /**
      * Refresh the list with the items in the Mobile Service Table
      */
 
-    private List<ToDoItem> refreshItemsFromMobileServiceTable(String find) throws ExecutionException, InterruptedException {
-        return mToDoTable.where().field("tags").eq(val(find)).execute().get();
+    private List<ToDoItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
+        return mToDoTable.where().field("tags").eq(val(search)).execute().get();
     }
 
     //Offline Sync
@@ -503,8 +518,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void ListImages() {
+    private void ListImages(boolean flag) {
         Intent intent = new Intent(getBaseContext(), ListImagesActivity.class);
+        intent.putExtra("flag", flag);
+        if(flag)intent.putExtra("images",taggedimages.toArray(new String [taggedimages.size()]));
         startActivity(intent);
     }
 
